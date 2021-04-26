@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Book;
+use App\Repository\BookRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
@@ -25,27 +28,51 @@ class LibraryController extends AbstractController{
     */
 
     /**
-     * @Route("/library/list", name="library_list")
+     * @Route("/books", name="books_get")
      */
-    public function list(Request $request, LoggerInterface $logger) {
-
-        $title = $request -> get('title', 'Título por defecto');
-        $logger -> info('GET library_list');
+    public function list(BookRepository $bookRepository) {
+        $books = $bookRepository -> findAll();
+        $booksAsArray = [];
+        foreach($books as $book) {
+            $booksAsArray[] = [
+                'id' => $book -> getId(),
+                'title' => $book -> getTitle()
+            ];
+        }
         $response = new JsonResponse();
+        $response -> setData([
+            'success' => true,
+            'data' => $booksAsArray
+        ]);
+        return $response;
+    }
+
+    //Inyectamos el servicio entitymanager para poder utilizarlo
+
+    /**
+     * @Route("/book/create", name="create_book")
+     */
+    public function createBook(Request $request, EntityManagerInterface $em) {
+        $title = $request -> get('title', null);
+        $response = new JsonResponse();
+        if (empty($title)) {
+            $response -> setData([
+                'success' => false,
+                'error' => 'Tittle cannot be empty',
+                'data' => null
+            ]);
+            return $response;
+        }
+        $book = new Book();
+        $book -> setTitle($title);
+        $em -> persist($book);
+        $em -> flush();
         $response -> setData([
             'success' => true,
             'data' => [
                 [
-                    'id' => 1,
-                    'title' => 'Hacia rutas salvajes'
-                ],
-                [
-                    'id' => 2,
-                    'title' => 'El nombre del viento'
-                ],
-                [
-                    'id' => 3,
-                    'title' => $title
+                    'id' => $book -> getId(),
+                    'title' => $book -> getTitle()
                 ]
             ]
         ]);
