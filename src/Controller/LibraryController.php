@@ -19,7 +19,7 @@ class LibraryController extends AbstractController{
      * estamos creando un bean rofl que se mete en un container para utilizarlo 
      * tenemos dos formar de realizar la inyección de dependencias, aquí en el constructor
      * como se puede observar, y la otra gracias a la última sección del services.yaml que 
-     * se puede realizar directamente pasando los "beans" como argumento a las funciones.
+     * se puede realizar directamente pasando los services como argumento a las funciones.
     
     * public function __construct(LoggerInterface $logger)
     * {
